@@ -5,8 +5,7 @@ const int break_length = 4;
 const int RED_PIN = 9;
 const int GREEN_PIN = 10;
 const int BLUE_PIN = 11;
-const int buzzerPinOne = 5;
-const int buzzerPinTwo = 6;
+const int buzzerPin = 5;
 
 enum modes_t {WORK_MODE, BREAK_MODE};
 modes_t mode = WORK_MODE;
@@ -22,15 +21,18 @@ void setup()
   pinMode(RED_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(BLUE_PIN, OUTPUT);
-  pinMode(buzzerPinOne, OUTPUT);
-  pinMode(buzzerPinTwo, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
 
   Serial.begin(9600);
 }
 
 void loop()
 {
-    play_victory(buzzerPinOne);
+    play_monster_battle(buzzerPin);
+    delay(3000);
+    play_victory(buzzerPin);
+    delay(3000);
+    play_boss_battle(buzzerPin);
     delay(10000);
   // change_mode_if_mode_time_has_expired();
   
@@ -56,7 +58,7 @@ void change_mode_if_mode_time_has_expired()
   
   if(mode == BREAK_MODE && break_time_elapsed >= break_length)
   {
-    play_victory(buzzerPinOne);
+    play_victory(buzzerPin);
     reset_timers();
     mode = WORK_MODE;
   }
