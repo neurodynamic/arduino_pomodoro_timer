@@ -5,26 +5,25 @@ const int GREEN_PIN = 10;
 const int BLUE_PIN = 11;
 const int buzzerPin = 5;
 
-// const int work_length = 4;
-// const int limbo_length = 6;
-// const int break_length = 4;
-// const int long_break_length = 8;
-// const int long_break_every_x_breaks = 4;
+const int work_length = 4;
+const int limbo_length = 6;
+const int break_length = 4;
+const int long_break_length = 8;
+const int long_break_every_x_breaks = 3;
 
-const int work_length = 24*60;
-const int limbo_length = 2*60;
-const int break_length = 5*60;
-const int long_break_length = 30*60;
-const int long_break_every_x_breaks = 4;
+// const int work_length = 24*60;
+// const int limbo_length = 2*60;
+// const int break_length = 5*60;
+// const int long_break_length = 30*60;
+// const int long_break_every_x_breaks = 4;
 
 enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
 int lightLevel, high = 0, low = 1023, breaks_completed = 0;//, intervals_since_last_full_second = 0;
-int greenIntensity, blueIntensity, redIntensity;
-int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0, interval_in_ms = 1000.0;
-boolean in_chair, first_limbo_alarm_on = true, second_limbo_alarm_on = true;
+int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;//, interval_in_ms = 1000.0;
+boolean in_chair, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
 
 void setup()
 {
@@ -41,155 +40,188 @@ void loop()
 {
   // test();
 
-  change_mode_if_necessary();
+  execute_ticklist();
   
   lightLevel = analogRead(sensorPin);
   in_chair = lightLevel < 670;
   
   set_chair_indicator_led();
   
-  set_time_indicator_led();
-  
-  tick();
+  tick(1);
 }
 
 void test(){
   while(true){
-    play_boss_battle(buzzerPin);
+    play_monster_battle_ascension(buzzerPin);
     delay(3000);
   }
 }
 
-void change_mode_if_necessary()
+void execute_ticklist()
 {
-  if(mode == WORK_MODE && work_time_elapsed >= work_length)
+  switch(mode)
   {
-    change_to_limbo_mode();
-  }
-
-  if(mode == LIMBO_MODE && limbo_time_elapsed >= limbo_length/3 && first_limbo_alarm_on)
-  {
-    play_limbo_level_two(buzzerPin);
-    play_limbo_level_two(buzzerPin);
-    first_limbo_alarm_on = false;
-  }
-
-  if(mode == LIMBO_MODE && limbo_time_elapsed >= limbo_length*2/3 && second_limbo_alarm_on)
-  {
-    play_limbo_level_three(buzzerPin);
-    play_limbo_level_three(buzzerPin);
-    second_limbo_alarm_on = false;
-  }
-
-  if(mode == LIMBO_MODE && (limbo_time_elapsed >= limbo_length || in_chair == false))
-  {
-    if(breaks_completed + 1 == long_break_every_x_breaks)
-    {
-      reset_timers();
-      mode = LONG_BREAK_MODE;
-      set_time_indicator_led();
-      play_boss_battle(buzzerPin);
-    }
-    else
-    {
-      reset_timers();
-      mode = BREAK_MODE;
-      set_time_indicator_led();
-      play_monster_battle(buzzerPin);
-    }
-  }
-
-  if(mode == BREAK_MODE && break_time_elapsed >= break_length)
-  {
-    reset_timers();
-    mode = WORK_MODE;
-    set_time_indicator_led();
-    breaks_completed = breaks_completed + 1;
-    play_victory(buzzerPin);
-  }
-
-  if(mode == LONG_BREAK_MODE && break_time_elapsed >= long_break_length)
-  {
-    reset_timers();
-    mode = WORK_MODE;
-    set_time_indicator_led();
-    breaks_completed = 0;
-    play_victory(buzzerPin);
+    case WORK_MODE: execute_work_mode_ticklist(); break;
+    case LIMBO_MODE: execute_limbo_mode_ticklist(); break;
+    case BREAK_MODE: execute_break_mode_ticklist(); break;
+    case LONG_BREAK_MODE: execute_long_break_mode_ticklist(); break;
+    defaul : break;
   }
 }
-
-    void change_to_limbo_mode()
+    
+    void execute_work_mode_ticklist()
     {
-      // reset_timers();
-      mode = LIMBO_MODE;
-      set_time_indicator_led();
-      first_limbo_alarm_on = true;
-      second_limbo_alarm_on = true;
-      play_limbo_level_one(buzzerPin);
-      play_limbo_level_one(buzzerPin);
-    } 
+      shade_green_to_red_fade();
 
-
-
-    void reset_timers()
-    {
-      work_time_elapsed = 0;
-      limbo_time_elapsed = 0;
-      break_time_elapsed = 0;
+      if(work_time_elapsed >= work_length){
+        change_to_limbo_mode();
+      }
     }
 
-void set_time_indicator_led()
-{
-  if(mode == WORK_MODE)
-  {
-    shade_green_to_red_fade();
-  }
-  else if(mode == LIMBO_MODE)
-  {
-    shade_green_to_red_fade();
-  }
-  else
-  {
-    if(mode == BREAK_MODE)
+        void change_to_limbo_mode()
+        {
+          // reset_timers();
+          mode = LIMBO_MODE;
+          shade_green_to_red_fade();
+          one_third_limbo_buzzer_played = false;
+          two_thirds_limbo_buzzer_played = false;
+          trigger_limbo_alarm(1);
+        } 
+    
+    void execute_limbo_mode_ticklist()
+    {
+      shade_green_to_red_fade();
+
+      if(limbo_time_elapsed >= limbo_length/3 && one_third_limbo_buzzer_played == false)
+      {
+        trigger_limbo_alarm(2);
+      }
+
+      else if(limbo_time_elapsed >= limbo_length*2/3 && two_thirds_limbo_buzzer_played == false)
+      {
+        trigger_limbo_alarm(3);
+      }
+
+      else if(limbo_time_elapsed >= limbo_length || in_chair == false)
+      {
+        if(breaks_completed + 1 == long_break_every_x_breaks)
+        {
+          start_long_break();
+        }
+        else
+        {
+          start_regular_break();
+        }
+      }
+    }
+
+        void trigger_limbo_alarm(int alarm_number)
+        {
+          switch(alarm_number)
+          {
+            case 1: 
+              play_limbo_level_one(buzzerPin);
+              play_limbo_level_one(buzzerPin);
+              break;
+            case 2: 
+              play_limbo_level_two(buzzerPin);
+              play_limbo_level_two(buzzerPin);
+              one_third_limbo_buzzer_played = true;
+              break;
+            case 3: 
+              play_limbo_level_three(buzzerPin);
+              play_limbo_level_three(buzzerPin);
+              two_thirds_limbo_buzzer_played = true;
+              break;
+            defaul : break;
+          }
+        }
+
+        void start_regular_break()
+        {
+          reset_timers();
+          mode = BREAK_MODE;
+          shade_red_to_blue_fade(break_time_elapsed, break_length);
+          play_monster_battle_ascension(buzzerPin);
+        }
+
+        void start_long_break()
+        {
+          reset_timers();
+          mode = LONG_BREAK_MODE;
+          shade_red_to_blue_fade(break_time_elapsed, long_break_length);
+          play_boss_battle(buzzerPin);
+        }
+
+            void reset_timers()
+            {
+              work_time_elapsed = 0;
+              limbo_time_elapsed = 0;
+              break_time_elapsed = 0;
+            }
+
+    
+    void execute_break_mode_ticklist()
     {
       shade_red_to_blue_fade(break_time_elapsed, break_length);
-    }
-    if(mode == LONG_BREAK_MODE)
-    {
-      shade_red_to_blue_fade(break_time_elapsed, long_break_length);
+
+      if(break_time_elapsed >= break_length){
+
+        breaks_completed = breaks_completed + 1;
+        change_to_work_mode();
+      }
     }
     
-  }
+    void execute_long_break_mode_ticklist()
+    {
+      shade_red_to_blue_fade(break_time_elapsed, long_break_length);
 
-  write_to_color_led(redIntensity, greenIntensity, blueIntensity);
-}
+      breaks_completed = 0;
+      if(break_time_elapsed >= long_break_length){
+        change_to_work_mode();
+      }
+    }
+
+        void change_to_work_mode()
+        {
+          reset_timers();
+          mode = WORK_MODE;
+          shade_green_to_red_fade();
+          play_victory(buzzerPin);
+        }
 
     void shade_green_to_red_fade()
     {
-      blueIntensity = 0;
-      int pomodoro_completion = map(work_time_elapsed + limbo_time_elapsed, 0, work_length + (limbo_length/2), 0, 255);
-      pomodoro_completion = constrain(pomodoro_completion, 0, 255);
+      int redIntensity, blueIntensity = 0, greenIntensity, normalized_fade_completion;
+
+      normalized_fade_completion = map(work_time_elapsed + limbo_time_elapsed, 0, work_length + (limbo_length/2), 0, 255);
+      normalized_fade_completion = constrain(normalized_fade_completion, 0, 255);
     
-      redIntensity = pomodoro_completion;
-      greenIntensity = 255 - pomodoro_completion;
+      redIntensity = normalized_fade_completion;
+      greenIntensity = 255 - normalized_fade_completion;
+
+      write_to_color_led(redIntensity, greenIntensity, blueIntensity);
     }
 
     void shade_red_to_blue_fade(int fade_completion, int fade_length)
     {
-      greenIntensity = 0;
-      int normalized_fade_completion = map(fade_completion, 0, fade_length, 0, 255);
+      int redIntensity, blueIntensity, greenIntensity = 0, normalized_fade_completion;
+
+      normalized_fade_completion = map(fade_completion, 0, fade_length, 0, 255);
       normalized_fade_completion = constrain(normalized_fade_completion, 0, 255);
     
       blueIntensity = normalized_fade_completion;
       redIntensity = 255 - normalized_fade_completion;
+
+      write_to_color_led(redIntensity, greenIntensity, blueIntensity);
     }
 
-    void write_to_color_led(int redIntensity, int greenIntensity, int blueIntensity)
-    {
-      analogWrite(RED_PIN, redIntensity);
-      analogWrite(BLUE_PIN, blueIntensity);
-      analogWrite(GREEN_PIN, greenIntensity);
-    }
+        void write_to_color_led(int redIntensity, int greenIntensity, int blueIntensity)
+        {
+          analogWrite(RED_PIN, redIntensity);
+          analogWrite(BLUE_PIN, blueIntensity);
+          analogWrite(GREEN_PIN, greenIntensity);
+        }
 
 void set_chair_indicator_led()
 {
@@ -203,56 +235,35 @@ void set_chair_indicator_led()
   }
 }
 
-void tick()
+void tick(int seconds)
 {
-  delay(interval_in_ms);
-  // intervals_since_last_full_second = intervals_since_last_full_second + 1;
-  
-  // if(clock_is_on_an_exact_second())
-  // {
-  //   intervals_since_last_full_second = 0;
-  //   print_status();
-  // }
-  
+  int i;
+
+  for (i = 0; i < seconds*10; i++)
+  {
+    delay(100);
+    lightLevel = analogRead(sensorPin);
+    in_chair = lightLevel < 670;
+    set_chair_indicator_led();
+  }
+
   advance_appropriate_timer();
 }
-
-    // boolean clock_is_on_an_exact_second()
-    // {
-    //   if(intervals_since_last_full_second == 1000.0/interval_in_ms)
-    //   {
-    //     return true;
-    //   }
-    //   else
-    //   {
-    //     return false;
-    //   }
-    // }
-
-    // void print_status()
-    // {
-    //   Serial.print("light level: ");
-    //   Serial.print(lightLevel);
-    //   Serial.print("       work time: ");
-    //   Serial.print(work_time_elapsed);
-    //   Serial.print("       break time: ");
-    //   Serial.println(break_time_elapsed); 
-    // }
 
     void advance_appropriate_timer()
     {
       if(in_chair)
       {
         if(mode == LIMBO_MODE){
-          limbo_time_elapsed = limbo_time_elapsed + 1;//interval_in_ms/1000.0;
+          limbo_time_elapsed = limbo_time_elapsed + 1;;
         }
         else
         {
-          work_time_elapsed = work_time_elapsed + 1;//interval_in_ms/1000.0;
+          work_time_elapsed = work_time_elapsed + 1;;
         }
       }
       else
       {
-        break_time_elapsed = break_time_elapsed + 1;//interval_in_ms/1000.0;
+        break_time_elapsed = break_time_elapsed + 1;;
       } 
     }

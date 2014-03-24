@@ -106,9 +106,9 @@ double play_boss_battle(int buzzer)
     NOTE_C3, NOTE_C3, NOTE_C3, NOTE_F3,
     NOTE_C3, NOTE_C3, NOTE_C3, NOTE_FS3,
     NOTE_F3, NOTE_DS3, NOTE_F3, NOTE_DS3, 
-    NOTE_D3, NOTE_DS3, NOTE_D3,
+    NOTE_D3, NOTE_DS3, NOTE_D3//,
 
-    NOTE_C5
+    // NOTE_C5
     // , NOTE_D5, NOTE_D5, NOTE_D5,
     // NOTE_C5, NOTE_D5, NOTE_D5, NOTE_D5
     // NOTE_DS5, NOTE_F5, NOTE_F5, NOTE_F5,
@@ -139,7 +139,7 @@ double play_boss_battle(int buzzer)
     0.33,0.33,0.33,0.33,
     0.33,1,0.33,
 
-    8
+    //8
     // ,1,1,1,
     // 5,1,1,1
     // 4,1,1,1,
@@ -147,7 +147,7 @@ double play_boss_battle(int buzzer)
     // 4
   };
   double tempo = 250;
-  int note_count = 77;
+  int note_count = 76;
 
   return playSong(buzzer, notes, beats, tempo, note_count);
 }
@@ -156,25 +156,25 @@ double play_boss_battle(int buzzer)
 double play_monster_battle_ascension(int buzzer)
 {
    int notes[] = { 
-    NOTE_C4, NOTE_AS3, NOTE_C4,
-    NOTE_DS4, NOTE_F4, NOTE_G4, 
-    NOTE_GS4, NOTE_G4, NOTE_GS4, 
-    NOTE_AS4, NOTE_C5, NOTE_DS5, 
-    NOTE_F5, NOTE_G5, NOTE_GS5, 
-    NOTE_AS5, NOTE_C6, NOTE_C6,
-    NOTE_F6
+    NOTE_C3, NOTE_AS2, NOTE_C3,
+    NOTE_DS3//, NOTE_F3, NOTE_G3, 
+    // NOTE_GS3, NOTE_G3, NOTE_GS3, 
+    // NOTE_AS3, NOTE_C3, NOTE_DS3, 
+    // NOTE_F3, NOTE_G3, NOTE_GS3, 
+    // NOTE_AS3, NOTE_C4, NOTE_C4,
+    // NOTE_F4
    };
 
   double beats[] = {
     1.5,1.5,1.5,
-    1.5,1,1,
-    1.5,1.5,1.5,
-    1.5,1,1,
-    1.5,1.5,1.5,
-    1.5,1,1,2
+    1.5//,1,1,
+    // 1.5,1.5,1.5,
+    // 1.5,1,1,
+    // 1.5,1.5,1.5,
+    // 1.5,1,1,2
   };
-  double tempo = 320;
-  int note_count = 19;
+  double tempo = 300;
+  int note_count = 4;
   
   return playSong(buzzer, notes, beats, tempo, note_count);
 }
