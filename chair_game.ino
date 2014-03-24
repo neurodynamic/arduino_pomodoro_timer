@@ -10,13 +10,13 @@ const int GREEN_PIN = 10;
 const int BLUE_PIN = 11;
 const int buzzerPin = 5;
 
-enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE};
+enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
-int lightLevel, high = 0, low = 1023;//, intervals_since_last_full_second = 0;
+int lightLevel, high = 0, low = 1023, breaks_completed = 0;//, intervals_since_last_full_second = 0;
 int greenIntensity, blueIntensity, redIntensity;
-double work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0, interval_in_ms = 1000.0;
+int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0, interval_in_ms = 1000.0;
 boolean in_chair, first_limbo_alarm_on = true, second_limbo_alarm_on = true;
 
 void setup()
@@ -57,13 +57,7 @@ void change_mode_if_necessary()
 {
   if(mode == WORK_MODE && work_time_elapsed >= work_length)
   {
-    // reset_timers();
-    mode = LIMBO_MODE;
-    set_time_indicator_led();
-    first_limbo_alarm_on = true;
-    second_limbo_alarm_on = true;
-    play_limbo_level_one(buzzerPin);
-    play_limbo_level_one(buzzerPin);
+    change_to_limbo_mode();
   }
 
   if(mode == LIMBO_MODE && limbo_time_elapsed >= limbo_length/3 && first_limbo_alarm_on)
@@ -82,10 +76,20 @@ void change_mode_if_necessary()
 
   if(mode == LIMBO_MODE && (limbo_time_elapsed >= limbo_length || in_chair == false))
   {
-    reset_timers();
-    mode = BREAK_MODE;
-    set_time_indicator_led();
-    play_monster_battle(buzzerPin);
+    if(breaks_completed + 1 == long_break_every_x_breaks)
+    {
+      reset_timers();
+      mode = LONG_BREAK_MODE;
+      set_time_indicator_led();
+      play_boss_battle(buzzerPin);
+    }
+    else
+    {
+      reset_timers();
+      mode = BREAK_MODE;
+      set_time_indicator_led();
+      play_monster_battle(buzzerPin);
+    }
   }
 
   if(mode == BREAK_MODE && break_time_elapsed >= break_length)
@@ -93,9 +97,31 @@ void change_mode_if_necessary()
     reset_timers();
     mode = WORK_MODE;
     set_time_indicator_led();
+    breaks_completed = breaks_completed + 1;
+    play_victory(buzzerPin);
+  }
+
+  if(mode == LONG_BREAK_MODE && break_time_elapsed >= long_break_length)
+  {
+    reset_timers();
+    mode = WORK_MODE;
+    set_time_indicator_led();
+    breaks_completed = 0;
     play_victory(buzzerPin);
   }
 }
+
+    void change_to_limbo_mode()
+    {
+      // reset_timers();
+      mode = LIMBO_MODE;
+      set_time_indicator_led();
+      first_limbo_alarm_on = true;
+      second_limbo_alarm_on = true;
+      play_limbo_level_one(buzzerPin);
+      play_limbo_level_one(buzzerPin);
+    } 
+
 
 
     void reset_timers()
@@ -117,7 +143,15 @@ void set_time_indicator_led()
   }
   else
   {
-    shade_red_to_blue_fade();
+    if(mode == BREAK_MODE)
+    {
+      shade_red_to_blue_fade(break_time_elapsed, break_length);
+    }
+    if(mode == LONG_BREAK_MODE)
+    {
+      shade_red_to_blue_fade(break_time_elapsed, long_break_length);
+    }
+    
   }
 
   write_to_color_led(redIntensity, greenIntensity, blueIntensity);
@@ -133,14 +167,14 @@ void set_time_indicator_led()
       greenIntensity = 255 - pomodoro_completion;
     }
 
-    void shade_red_to_blue_fade()
+    void shade_red_to_blue_fade(int fade_completion, int fade_length)
     {
       greenIntensity = 0;
-      int break_completion = map(break_time_elapsed, 0, break_length, 0, 255);
-      break_completion = constrain(break_completion, 0, 255);
+      int normalized_fade_completion = map(fade_completion, 0, fade_length, 0, 255);
+      normalized_fade_completion = constrain(normalized_fade_completion, 0, 255);
     
-      blueIntensity = break_completion;
-      redIntensity = 255 - break_completion;
+      blueIntensity = normalized_fade_completion;
+      redIntensity = 255 - normalized_fade_completion;
     }
 
     void write_to_color_led(int redIntensity, int greenIntensity, int blueIntensity)
@@ -203,15 +237,15 @@ void tick()
       if(in_chair)
       {
         if(mode == LIMBO_MODE){
-          limbo_time_elapsed = limbo_time_elapsed + interval_in_ms/1000.0;
+          limbo_time_elapsed = limbo_time_elapsed + 1;//interval_in_ms/1000.0;
         }
         else
         {
-          work_time_elapsed = work_time_elapsed + interval_in_ms/1000.0;
+          work_time_elapsed = work_time_elapsed + 1;//interval_in_ms/1000.0;
         }
       }
       else
       {
-        break_time_elapsed = break_time_elapsed + interval_in_ms/1000.0;
+        break_time_elapsed = break_time_elapsed + 1;//interval_in_ms/1000.0;
       } 
     }
