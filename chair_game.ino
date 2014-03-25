@@ -41,7 +41,7 @@ void loop()
 {
   // test_song();
   monitor_chair_for_one_second();
-  // print_status();
+  print_status();
 
   execute_ticklist();
 
@@ -62,7 +62,7 @@ void loop()
         delay(100);
         lightLevel = analogRead(sensorPin);
         ambientLightLevel = analogRead(ambientSensorPin);
-        in_chair = ambientLightLevel - lightLevel >= 200;
+        in_chair = ambientLightLevel - lightLevel >= 110;
         set_chair_indicator_led();
       }
     }
@@ -252,10 +252,12 @@ void loop()
 
     void print_status()
     {
-      Serial.print("light level: ");
+      Serial.print("ll: ");
       Serial.print(lightLevel);
-      Serial.print("   ambient light level: ");
+      Serial.print("   all: ");
       Serial.print(ambientLightLevel);
+      Serial.print("   diff: ");
+      Serial.print(ambientLightLevel - lightLevel);
       Serial.print("   work time: ");
       Serial.print(work_time_elapsed);
       Serial.print("   break time: ");
