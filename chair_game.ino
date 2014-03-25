@@ -6,17 +6,17 @@ const int GREEN_PIN = 10;
 const int BLUE_PIN = 11;
 const int buzzerPin = 5;
 
-const int work_length = 4;
-const int limbo_length = 6;
-const int break_length = 4;
-const int long_break_length = 8;
-const int long_break_every_x_breaks = 3;
+// const int work_length = 4;
+// const int limbo_length = 6;
+// const int break_length = 4;
+// const int long_break_length = 8;
+// const int long_break_every_x_breaks = 3;
 
-// const int work_length = 24*60;
-// const int limbo_length = 2*60;
-// const int break_length = 5*60;
-// const int long_break_length = 30*60;
-// const int long_break_every_x_breaks = 4;
+const int work_length = 24*60;
+const int limbo_length = 2*60;
+const int break_length = 5*60;
+const int long_break_length = 30*60;
+const int long_break_every_x_breaks = 4;
 
 enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
@@ -41,7 +41,7 @@ void loop()
 {
   // test_song();
   monitor_chair_for_one_second();
-  print_status();
+  // print_status();
 
   execute_ticklist();
 
