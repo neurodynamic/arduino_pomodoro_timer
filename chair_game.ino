@@ -276,10 +276,15 @@ void loop()
         else
         {
           work_time_elapsed = work_time_elapsed + 1;
+          break_time_elapsed = 0;
         }
       }
       else
       {
         break_time_elapsed = break_time_elapsed + 1;
+
+        if(work_time_elapsed > 0 && break_time_elapsed > work_time_elapsed){
+          work_time_elapsed = 0;
+        }
       } 
     }
