@@ -83,6 +83,11 @@ void loop()
         {
           shade_green_to_red_fade();
 
+          if(break_time_elapsed >= long_break_length){
+            breaks_completed = 0;
+            work_time_elapsed = 0;
+          }
+
           if(work_time_elapsed >= work_length){
             change_to_limbo_mode();
           }
@@ -256,21 +261,23 @@ void loop()
       Serial.print("   break time: ");
       Serial.println(break_time_elapsed); 
     }
-    
+
     void advance_appropriate_timer()
     {
       if(in_chair)
       {
+        break_time_elapsed = 0;
+
         if(mode == LIMBO_MODE){
-          limbo_time_elapsed = limbo_time_elapsed + 1;;
+          limbo_time_elapsed = limbo_time_elapsed + 1;
         }
         else
         {
-          work_time_elapsed = work_time_elapsed + 1;;
+          work_time_elapsed = work_time_elapsed + 1;
         }
       }
       else
       {
-        break_time_elapsed = break_time_elapsed + 1;;
+        break_time_elapsed = break_time_elapsed + 1;
       } 
     }
