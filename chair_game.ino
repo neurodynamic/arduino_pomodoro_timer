@@ -116,7 +116,7 @@ void loop()
 
           else if(limbo_time_elapsed >= limbo_length || in_chair == false)
           {
-            if(work_time_completed_since_last_long_break <= break_length * long_break_every_x_breaks)
+            if(work_time_completed_since_last_long_break >= break_length * long_break_every_x_breaks)
             {
               work_time_completed_since_last_long_break = 0;
               start_long_break();
@@ -289,8 +289,8 @@ void loop()
             work_time_completed_since_last_long_break += work_time_elapsed;
             work_time_elapsed = 0;
           }
-          
-          if(break_time_elapsed > break_length){
+
+          if(break_time_elapsed == break_length){
             work_time_completed_since_last_long_break += work_time_elapsed;
             work_time_elapsed = 0;
           }
