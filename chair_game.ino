@@ -22,9 +22,11 @@ enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
-int lightLevel, ambientLightLevel, high = 0, low = 1023, breaks_completed = 0;//, intervals_since_last_full_second = 0;
+int lightLevel, ambientLightLevel, high = 0, low = 1023;//, intervals_since_last_full_second = 0;
 int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;//, interval_in_ms = 1000.0;
+int work_time_completed_since_last_long_break = 0;
 boolean in_chair, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
+
 
 void setup()
 {
@@ -83,11 +85,6 @@ void loop()
         {
           shade_green_to_red_fade();
 
-          if(break_time_elapsed >= long_break_length){
-            breaks_completed = 0;
-            work_time_elapsed = 0;
-          }
-
           if(work_time_elapsed >= work_length){
             change_to_limbo_mode();
           }
@@ -119,8 +116,9 @@ void loop()
 
           else if(limbo_time_elapsed >= limbo_length || in_chair == false)
           {
-            if(breaks_completed + 1 == long_break_every_x_breaks)
+            if(work_time_completed_since_last_long_break <= break_length * long_break_every_x_breaks)
             {
+              work_time_completed_since_last_long_break = 0;
               start_long_break();
             }
             else
@@ -154,6 +152,7 @@ void loop()
 
             void start_regular_break()
             {
+              work_time_completed_since_last_long_break += work_time_elapsed;
               reset_timers();
               mode = BREAK_MODE;
               shade_red_to_blue_fade(break_time_elapsed, break_length);
@@ -181,8 +180,6 @@ void loop()
           shade_red_to_blue_fade(break_time_elapsed, break_length);
 
           if(break_time_elapsed >= break_length){
-
-            breaks_completed = breaks_completed + 1;
             change_to_work_mode();
           }
         }
@@ -191,7 +188,6 @@ void loop()
         {
           shade_red_to_blue_fade(break_time_elapsed, long_break_length);
 
-          breaks_completed = 0;
           if(break_time_elapsed >= long_break_length){
             change_to_work_mode();
           }
@@ -282,9 +278,25 @@ void loop()
       else
       {
         break_time_elapsed = break_time_elapsed + 1;
-
-        if(work_time_elapsed > 0 && break_time_elapsed > work_time_elapsed){
-          work_time_elapsed = 0;
-        }
+        perform_break_time_checks();
       } 
     }
+
+        void perform_break_time_checks()
+        {
+
+          if(break_time_elapsed > work_time_elapsed){
+            work_time_completed_since_last_long_break += work_time_elapsed;
+            work_time_elapsed = 0;
+          }
+          
+          if(break_time_elapsed > break_length){
+            work_time_completed_since_last_long_break += work_time_elapsed;
+            work_time_elapsed = 0;
+          }
+
+          if(break_time_elapsed >= long_break_length){
+            work_time_completed_since_last_long_break = 0;
+            work_time_elapsed = 0;
+          }
+        }
