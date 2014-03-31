@@ -115,8 +115,9 @@ void loop()
         else
         {
           work_time_elapsed = work_time_elapsed + 1;
-          break_time_elapsed = 0;
         }
+
+        break_time_elapsed = 0;
       }
       else
       {
@@ -127,7 +128,6 @@ void loop()
 
         void perform_break_time_checks()
         {
-
           if(break_time_elapsed > work_time_elapsed){
             work_time_completed_since_last_long_break += work_time_elapsed;
             work_time_elapsed = 0;
