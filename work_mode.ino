@@ -9,7 +9,6 @@ void execute_work_mode_ticklist()
 
     void change_to_limbo_mode()
     {
-      // reset_timers();
       mode = LIMBO_MODE;
       shade_green_to_red_fade();
       one_third_limbo_buzzer_played = false;

@@ -76,7 +76,7 @@ double play_monster_battle(int buzzer)
     // 4
   };
   double tempo = 250;
-  int note_count = 8;//30;
+  int note_count = 8;
 
   return playSong(buzzer, notes, beats, tempo, note_count);
 }
