@@ -116,8 +116,6 @@ void loop()
         {
           work_time_elapsed = work_time_elapsed + 1;
         }
-
-        break_time_elapsed = 0;
       }
       else
       {
