@@ -1,5 +1,4 @@
 const int sensorPin = 0;
-const int ambientSensorPin = 2;
 const int in_chair_indicator_pin = 3;
 const int RED_PIN = 9;
 const int GREEN_PIN = 10;
@@ -25,7 +24,7 @@ enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
-int lightLevel, proximity1, proximity2, high = 0, low = 1023;
+int lightLevel, proximity, high = 0, low = 1023;
 int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;
 int work_time_completed_since_last_long_break = 0;
 boolean in_chair, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
@@ -57,9 +56,8 @@ void loop()
       for (int i = 0; i < 10; i++)
       {
         delay(100);
-        proximity1 = analogRead(sensorPin);
-        proximity2 = analogRead(ambientSensorPin);
-        in_chair = proximity1 > 150;
+        proximity = analogRead(sensorPin);
+        in_chair = proximity > 150;
         set_chair_indicator_led();
       }
     }
@@ -78,12 +76,8 @@ void loop()
 
     void print_status()
     {
-      // Serial.print("ll: ");
-      // Serial.print(lightLevel);
       Serial.print("   prox1: ");
-      Serial.print(proximity1);
-      Serial.print("   prox2: ");
-      Serial.print(proximity2);
+      Serial.print(proximity);
       Serial.print("   work: ");
       Serial.print(work_time_elapsed);
       Serial.print("   break: ");
