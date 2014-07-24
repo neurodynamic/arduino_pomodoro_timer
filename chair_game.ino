@@ -1,11 +1,12 @@
 const int sensorPin = 0;
-const int ambientSensorPin = 1;
+const int ambientSensorPin = 2;
 const int in_chair_indicator_pin = 3;
 const int RED_PIN = 9;
 const int GREEN_PIN = 10;
 const int BLUE_PIN = 11;
 const int buzzerPin = 5;
 
+//https://github.com/hparra/ruby-serialport/
 // CONSTANTS FOR TESTING
 // const int work_length = 4;
 // const int limbo_length = 6;
@@ -15,7 +16,7 @@ const int buzzerPin = 5;
 
 // CONSTANTS FOR REAL LIFE
 const int work_length = 24*60;
-const int limbo_length = 5*60;
+const int limbo_length = 3*60;
 const int break_length = 5*60;
 const int long_break_length = 30*60;
 const int long_break_every_x_breaks = 4;
@@ -24,7 +25,7 @@ enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
-int lightLevel, ambientLightLevel, high = 0, low = 1023;
+int lightLevel, proximity1, proximity2, high = 0, low = 1023;
 int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;
 int work_time_completed_since_last_long_break = 0;
 boolean in_chair, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
@@ -56,9 +57,9 @@ void loop()
       for (int i = 0; i < 10; i++)
       {
         delay(100);
-        lightLevel = analogRead(sensorPin);
-        ambientLightLevel = analogRead(ambientSensorPin);
-        in_chair = ambientLightLevel - lightLevel >= 110;
+        proximity1 = analogRead(sensorPin);
+        proximity2 = analogRead(ambientSensorPin);
+        in_chair = proximity1 > 150;
         set_chair_indicator_led();
       }
     }
@@ -77,12 +78,12 @@ void loop()
 
     void print_status()
     {
-      Serial.print("ll: ");
-      Serial.print(lightLevel);
-      Serial.print("   all: ");
-      Serial.print(ambientLightLevel);
-      Serial.print("   diff: ");
-      Serial.print(ambientLightLevel - lightLevel);
+      // Serial.print("ll: ");
+      // Serial.print(lightLevel);
+      Serial.print("   prox1: ");
+      Serial.print(proximity1);
+      Serial.print("   prox2: ");
+      Serial.print(proximity2);
       Serial.print("   work: ");
       Serial.print(work_time_elapsed);
       Serial.print("   break: ");
