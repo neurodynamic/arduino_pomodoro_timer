@@ -1,4 +1,4 @@
-work_timer
+Helpful Pomodoro Chair Device
 ==========
 
 Code for Arduino device that automatically times Pomodoro shifts and breaks.
