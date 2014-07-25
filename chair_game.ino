@@ -1,4 +1,5 @@
 const int sensorPin = 0;
+const int switchReaderPin = 5;
 const int in_chair_indicator_pin = 3;
 const int RED_PIN = 9;
 const int GREEN_PIN = 10;
@@ -27,7 +28,7 @@ modes_t mode = WORK_MODE;
 int lightLevel, proximity, high = 0, low = 1023;
 int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;
 int work_time_completed_since_last_long_break = 0;
-boolean in_chair, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
+boolean in_chair, switch_is_on, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
 
 
 void setup()
@@ -43,13 +44,27 @@ void setup()
 
 void loop()
 {
-  monitor_chair_for_one_second();
-  print_status();
+  switch_check();
 
-  execute_ticklist();
+  if(switch_is_on){
 
-  advance_appropriate_timer();
+    
+    monitor_chair_for_one_second();
+    print_status();
+
+    execute_ticklist();
+
+    advance_appropriate_timer();
+
+  }else{
+    analogWrite(in_chair_indicator_pin, high);
+    delay(100);
+  }
 }
+
+    void switch_check(){
+      switch_is_on = analogRead(switchReaderPin) > 500;
+    }
 
     void monitor_chair_for_one_second()
     {
