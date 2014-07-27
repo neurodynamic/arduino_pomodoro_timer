@@ -25,7 +25,7 @@ enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
-int lightLevel, proximity, high = 0, low = 1023;
+int proximity, high = 0, low = 1023;
 int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;
 int work_time_completed_since_last_long_break = 0;
 boolean in_chair, switch_is_on, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
@@ -47,18 +47,9 @@ void loop()
   switch_check();
 
   if(switch_is_on){
-
-    
-    monitor_chair_for_one_second();
-    print_status();
-
-    execute_ticklist();
-
-    advance_appropriate_timer();
-
+    active_loop();
   }else{
-    analogWrite(in_chair_indicator_pin, high);
-    delay(100);
+    inactive_loop();
   }
 }
 
@@ -66,88 +57,120 @@ void loop()
       switch_is_on = analogRead(switchReaderPin) > 500;
     }
 
-    void monitor_chair_for_one_second()
-    {
-      for (int i = 0; i < 10; i++)
-      {
-        delay(100);
-        proximity = analogRead(sensorPin);
-        in_chair = proximity > 150;
-        set_chair_indicator_led();
-      }
+    void inactive_loop(){
+      turn_off_lights();
+      reset_all_timers_and_values();
+      delay(100);
     }
 
-        void set_chair_indicator_led()
+        void reset_all_timers_and_values(){
+          one_third_limbo_buzzer_played = false;
+          two_thirds_limbo_buzzer_played = false;
+          work_time_elapsed = 0;
+          limbo_time_elapsed = 0;
+          break_time_elapsed = 0;
+          work_time_completed_since_last_long_break = 0;
+          modes_t mode = WORK_MODE;
+        }
+
+        void turn_off_lights(){
+          analogWrite(in_chair_indicator_pin, high);
+          analogWrite(RED_PIN, high);
+          analogWrite(GREEN_PIN, high);
+          analogWrite(BLUE_PIN, high);
+        }
+
+    void active_loop(){
+      monitor_chair_for_one_second();
+      print_status();
+
+      execute_ticklist();
+
+      advance_appropriate_timer();
+    }
+
+        void monitor_chair_for_one_second()
+        {
+          for (int i = 0; i < 10; i++)
+          {
+            delay(100);
+            proximity = analogRead(sensorPin);
+            in_chair = proximity > 150;
+            set_chair_indicator_led();
+          }
+        }
+
+            void set_chair_indicator_led()
+            {
+              if(in_chair)
+              {
+                analogWrite(in_chair_indicator_pin, low);
+              }
+              else
+              {
+                analogWrite(in_chair_indicator_pin, high);
+              }
+            }
+
+        void print_status()
+        {
+          Serial.print("   prox1: ");
+          Serial.print(proximity);
+          Serial.print("   work: ");
+          Serial.print(work_time_elapsed);
+          Serial.print("   break: ");
+          Serial.print(break_time_elapsed); 
+          Serial.print("   long: ");
+          Serial.println(work_time_completed_since_last_long_break); 
+        }
+
+        void execute_ticklist()
+        {
+          switch(mode)
+          {
+            case WORK_MODE: execute_work_mode_ticklist(); break;
+            case LIMBO_MODE: execute_limbo_mode_ticklist(); break;
+            case BREAK_MODE: execute_break_mode_ticklist(); break;
+            case LONG_BREAK_MODE: execute_long_break_mode_ticklist(); break;
+            defaul : break;
+          }
+        }
+
+        void advance_appropriate_timer()
         {
           if(in_chair)
           {
-            analogWrite(in_chair_indicator_pin, low);
+            break_time_elapsed = 0;
+
+            if(mode == LIMBO_MODE){
+              limbo_time_elapsed = limbo_time_elapsed + 1;
+            }
+            else
+            {
+              work_time_elapsed = work_time_elapsed + 1;
+            }
           }
           else
           {
-            analogWrite(in_chair_indicator_pin, high);
-          }
+            break_time_elapsed = break_time_elapsed + 1;
+            perform_break_time_checks();
+          } 
         }
 
-    void print_status()
-    {
-      Serial.print("   prox1: ");
-      Serial.print(proximity);
-      Serial.print("   work: ");
-      Serial.print(work_time_elapsed);
-      Serial.print("   break: ");
-      Serial.print(break_time_elapsed); 
-      Serial.print("   long: ");
-      Serial.println(work_time_completed_since_last_long_break); 
-    }
+            void perform_break_time_checks()
+            {
+              if(break_time_elapsed > work_time_elapsed){
+                work_time_completed_since_last_long_break += work_time_elapsed;
+                work_time_elapsed = 0;
+              }
 
-    void execute_ticklist()
-    {
-      switch(mode)
-      {
-        case WORK_MODE: execute_work_mode_ticklist(); break;
-        case LIMBO_MODE: execute_limbo_mode_ticklist(); break;
-        case BREAK_MODE: execute_break_mode_ticklist(); break;
-        case LONG_BREAK_MODE: execute_long_break_mode_ticklist(); break;
-        defaul : break;
-      }
-    }
+              if(break_time_elapsed == break_length){
+                work_time_completed_since_last_long_break += work_time_elapsed;
+                work_time_elapsed = 0;
+              }
 
-    void advance_appropriate_timer()
-    {
-      if(in_chair)
-      {
-        break_time_elapsed = 0;
-
-        if(mode == LIMBO_MODE){
-          limbo_time_elapsed = limbo_time_elapsed + 1;
-        }
-        else
-        {
-          work_time_elapsed = work_time_elapsed + 1;
-        }
-      }
-      else
-      {
-        break_time_elapsed = break_time_elapsed + 1;
-        perform_break_time_checks();
-      } 
-    }
-
-        void perform_break_time_checks()
-        {
-          if(break_time_elapsed > work_time_elapsed){
-            work_time_completed_since_last_long_break += work_time_elapsed;
-            work_time_elapsed = 0;
-          }
-
-          if(break_time_elapsed == break_length){
-            work_time_completed_since_last_long_break += work_time_elapsed;
-            work_time_elapsed = 0;
-          }
-
-          if(break_time_elapsed >= long_break_length){
-            work_time_completed_since_last_long_break = 0;
-            work_time_elapsed = 0;
-          }
-        }
+              if(break_time_elapsed >= long_break_length){
+                work_time_completed_since_last_long_break = 0;
+                work_time_elapsed = 0;
+              }
+            }
