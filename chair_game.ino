@@ -28,7 +28,7 @@ modes_t mode = WORK_MODE;
 int proximity, high = 0, low = 1023;
 int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;
 int work_time_completed_since_last_long_break = 0;
-boolean in_chair, switch_is_on, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
+boolean in_chair, switch_is_on, in_chair_at_last_check = false, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
 
 
 void setup()
@@ -70,7 +70,7 @@ void loop()
           limbo_time_elapsed = 0;
           break_time_elapsed = 0;
           work_time_completed_since_last_long_break = 0;
-          modes_t mode = WORK_MODE;
+          mode = WORK_MODE;
         }
 
         void turn_off_lights(){
@@ -140,20 +140,27 @@ void loop()
         {
           if(in_chair)
           {
-            break_time_elapsed = 0;
-
-            if(mode == LIMBO_MODE){
-              limbo_time_elapsed = limbo_time_elapsed + 1;
-            }
-            else
+            if(in_chair && in_chair_at_last_check)
             {
-              work_time_elapsed = work_time_elapsed + 1;
+              break_time_elapsed = 0;
+
+              if(mode == LIMBO_MODE){
+                limbo_time_elapsed = limbo_time_elapsed + 1;
+              }
+              else
+              {
+                work_time_elapsed = work_time_elapsed + 1;
+              }
             }
+
+            in_chair_at_last_check = true;
           }
           else
           {
             break_time_elapsed = break_time_elapsed + 1;
             perform_break_time_checks();
+
+            in_chair_at_last_check = false;
           } 
         }
 
