@@ -95,7 +95,7 @@ void loop()
           {
             delay(100);
             proximity = analogRead(sensorPin);
-            in_chair = proximity > 150;
+            in_chair = proximity > 550;
             set_chair_indicator_led();
           }
         }
