@@ -1,4 +1,5 @@
-const int sensorPin = 0;
+const int pressureSensorPin = 0;
+const int dialReaderPin = 2;
 const int switchReaderPin = 5;
 const int in_chair_indicator_pin = 3;
 const int RED_PIN = 9;
@@ -8,18 +9,18 @@ const int buzzerPin = 5;
 
 //https://github.com/hparra/ruby-serialport/
 // CONSTANTS FOR TESTING
-const int work_length = 4;
-const int limbo_length = 6;
-const int break_length = 4;
-const int long_break_length = 8;
-const int long_break_every_x_breaks = 3;
+//const int work_length = 4;
+//const int limbo_length = 6;
+//const int break_length = 4;
+//const int long_break_length = 8;
+//const int long_break_every_x_breaks = 3;
 
 // CONSTANTS FOR REAL LIFE
-// const int work_length = 24*60;
-// const int limbo_length = 3*60;
-// const int break_length = 5*60;
-// const int long_break_length = 30*60;
-// const int long_break_every_x_breaks = 4;
+ const int work_length = 24*60;
+ const int limbo_length = 3*60;
+ const int break_length = 5*60;
+ const int long_break_length = 30*60;
+ const int long_break_every_x_breaks = 4;
 
 enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
@@ -94,8 +95,8 @@ void loop()
           for (int i = 0; i < 10; i++)
           {
             delay(100);
-            proximity = analogRead(sensorPin);
-            in_chair = proximity > 550;
+            proximity = analogRead(pressureSensorPin);
+            in_chair = proximity > (1000 - analogRead(dialReaderPin));
             set_chair_indicator_led();
           }
         }
@@ -124,8 +125,15 @@ void loop()
           Serial.println(work_time_completed_since_last_long_break);
           Serial.print("   switch analog read: ");
           Serial.println(analogRead(switchReaderPin));
-          // Serial.print("   switch on: ");
-          // Serial.println(switch_is_on);
+          Serial.print("   switch on: ");
+          Serial.println(switch_is_on);
+          Serial.print("   detection threshold: ");
+          Serial.println(1000 - analogRead(dialReaderPin));
+                    
+          Serial.println();
+          Serial.println("--------------------------------------");
+          Serial.println();
+
         }
 
         void execute_ticklist()
