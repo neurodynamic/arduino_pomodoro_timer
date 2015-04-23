@@ -1,6 +1,5 @@
-const int pressureSensorPin = 0,
-          dialReaderPin = 2,
-          switchReaderPin = 5,
+const int irSwitchReaderPin = 0,
+          onOffSwitchReaderPin = 5,
           in_chair_indicator_pin = 3,
           RED_PIN = 9,
           GREEN_PIN = 10,
@@ -26,7 +25,7 @@ enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
-int proximity, 
+int irSwitchReading, 
     high = 0, 
     low = 1023,
     work_time_elapsed = 0, 
@@ -65,7 +64,7 @@ void loop()
 }
 
     void switch_check(){
-      switch_is_on = analogRead(switchReaderPin) > 500;
+      switch_is_on = analogRead(onOffSwitchReaderPin) > 500;
     }
 
     void inactive_loop(){
@@ -105,9 +104,8 @@ void loop()
           for (int i = 0; i < 10; i++)
           {
             delay(100);
-            proximity = analogRead(pressureSensorPin);
-            in_chair = proximity < 500;
-            // in_chair = proximity > (1000 - analogRead(dialReaderPin));
+            irSwitchReading = analogRead(irSwitchReaderPin);
+            in_chair = irSwitchReading < 500;
             set_chair_indicator_led();
           }
         }
@@ -126,8 +124,8 @@ void loop()
 
         void print_status()
         {
-          Serial.print("   prox1: ");
-          Serial.print(proximity);
+          Serial.print("   IR switch reading: ");
+          Serial.print(irSwitchReading);
           Serial.print("   work: ");
           Serial.print(work_time_elapsed);
           Serial.print("   break: ");
@@ -135,11 +133,9 @@ void loop()
           Serial.print("   long: ");
           Serial.println(work_time_completed_since_last_long_break);
           Serial.print("   switch analog read: ");
-          Serial.println(analogRead(switchReaderPin));
+          Serial.println(analogRead(onOffSwitchReaderPin));
           Serial.print("   switch on: ");
           Serial.println(switch_is_on);
-          Serial.print("   detection threshold: ");
-          Serial.println(1000 - analogRead(dialReaderPin));
                     
           Serial.println();
           Serial.println("--------------------------------------");
