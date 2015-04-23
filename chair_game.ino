@@ -1,5 +1,6 @@
 const int irSwitchReaderPin = 0,
           onOffSwitchReaderPin = 5,
+          testSwitchReaderPin = 3,
           in_chair_indicator_pin = 3,
           RED_PIN = 9,
           GREEN_PIN = 10,
@@ -8,24 +9,32 @@ const int irSwitchReaderPin = 0,
 
 //https://github.com/hparra/ruby-serialport/
 // CONSTANTS FOR TESTING
-//const int work_length = 4,
-//          limbo_length = 6,
-//          break_length = 4,
-//          long_break_length = 8,
-//          long_break_every_x_breaks = 3;
+const int work_test_length = 4,
+          limbo_test_length = 6,
+          break_test_length = 4,
+          long_break_test_length = 8,
+          long_break_test_every_x_breaks = 3;
 
 // CONSTANTS FOR REAL LIFE
-const int work_length = 24*60, 
-          limbo_length = 3*60,
-          break_length = 5*60,
-          long_break_length = 30*60,
-          long_break_every_x_breaks = 4;
+const int irl_work_length = 24*60, 
+          irl_limbo_length = 3*60,
+          irl_break_length = 5*60,
+          irl_long_break_length = 30*60,
+          irl_long_break_every_x_breaks = 4;
+
+// ACTUAL VALUES
+int work_length, 
+    limbo_length,
+    break_length,
+    long_break_length,
+    long_break_every_x_breaks;
 
 enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
 int irSwitchReading, 
+    testSwitchReading,
     high = 0, 
     low = 1023,
     work_time_elapsed = 0, 
@@ -34,7 +43,9 @@ int irSwitchReading,
     work_time_completed_since_last_long_break = 0;
     
 boolean in_chair, 
-        switch_is_on, 
+        on_off_switch_is_on, 
+        test_switch_mode,
+        test_mode = false,
         in_chair_at_last_check = false, 
         one_third_limbo_buzzer_played = false, 
         two_thirds_limbo_buzzer_played = false;
@@ -48,23 +59,23 @@ void setup()
   pinMode(BLUE_PIN, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
   restBuzzer(buzzerPin);
-  
+    
   Serial.begin(9600);
 }
 
 void loop()
 {
-  switch_check();
+  on_off_switch_check();  
 
-  if(switch_is_on){
+  if(on_off_switch_is_on){
     active_loop();
   }else{
     inactive_loop();
   }
 }
 
-    void switch_check(){
-      switch_is_on = analogRead(onOffSwitchReaderPin) > 500;
+    void on_off_switch_check(){
+      on_off_switch_is_on = analogRead(onOffSwitchReaderPin) > 500;
     }
 
     void inactive_loop(){
@@ -91,6 +102,7 @@ void loop()
         }
 
     void active_loop(){
+      test_switch_check();
       monitor_chair_for_one_second();
       print_status();
 
@@ -98,6 +110,32 @@ void loop()
 
       advance_appropriate_timer();
     }
+    
+        void test_switch_check(){
+    
+          if(test_mode != test_switch_mode){
+            test_mode = test_switch_mode;
+            set_timing_variables();
+            reset_all_timers_and_values();
+          }
+        }
+        
+        void set_timing_variables(){
+          if(test_mode){
+            work_length = work_test_length;
+            limbo_length = limbo_test_length;
+            break_length = break_test_length;
+            long_break_length = long_break_test_length;
+            long_break_every_x_breaks = long_break_test_every_x_breaks;
+            
+          }else{
+            work_length = irl_work_length;
+            limbo_length = irl_limbo_length;
+            break_length = irl_break_length;
+            long_break_length = irl_long_break_length;
+            long_break_every_x_breaks = irl_long_break_every_x_breaks;
+          }
+        }
 
         void monitor_chair_for_one_second()
         {
@@ -107,6 +145,10 @@ void loop()
             irSwitchReading = analogRead(irSwitchReaderPin);
             in_chair = irSwitchReading < 500;
             set_chair_indicator_led();
+            
+            testSwitchReading = analogRead(testSwitchReaderPin);
+            test_switch_mode = testSwitchReading < 500;
+            test_switch_check();
           }
         }
 
@@ -126,6 +168,8 @@ void loop()
         {
           Serial.print("   IR switch reading: ");
           Serial.print(irSwitchReading);
+          Serial.print("   test switch reading: ");
+          Serial.print(analogRead(testSwitchReaderPin) > 500);
           Serial.print("   work: ");
           Serial.print(work_time_elapsed);
           Serial.print("   break: ");
@@ -135,7 +179,7 @@ void loop()
           Serial.print("   switch analog read: ");
           Serial.println(analogRead(onOffSwitchReaderPin));
           Serial.print("   switch on: ");
-          Serial.println(switch_is_on);
+          Serial.println(on_off_switch_is_on);
                     
           Serial.println();
           Serial.println("--------------------------------------");
