@@ -1,35 +1,44 @@
-const int pressureSensorPin = 0;
-const int dialReaderPin = 2;
-const int switchReaderPin = 5;
-const int in_chair_indicator_pin = 3;
-const int RED_PIN = 9;
-const int GREEN_PIN = 10;
-const int BLUE_PIN = 11;
-const int buzzerPin = 5;
+const int pressureSensorPin = 0,
+          dialReaderPin = 2,
+          switchReaderPin = 5,
+          in_chair_indicator_pin = 3,
+          RED_PIN = 9,
+          GREEN_PIN = 10,
+          BLUE_PIN = 11,
+          buzzerPin = 5;
 
 //https://github.com/hparra/ruby-serialport/
 // CONSTANTS FOR TESTING
-//const int work_length = 4;
-//const int limbo_length = 6;
-//const int break_length = 4;
-//const int long_break_length = 8;
-//const int long_break_every_x_breaks = 3;
+//const int work_length = 4,
+//          limbo_length = 6,
+//          break_length = 4,
+//          long_break_length = 8,
+//          long_break_every_x_breaks = 3;
 
 // CONSTANTS FOR REAL LIFE
- const int work_length = 24*60;
- const int limbo_length = 3*60;
- const int break_length = 5*60;
- const int long_break_length = 30*60;
- const int long_break_every_x_breaks = 4;
+const int work_length = 24*60, 
+          limbo_length = 3*60,
+          break_length = 5*60,
+          long_break_length = 30*60,
+          long_break_every_x_breaks = 4;
 
 enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
 
 
-int proximity, high = 0, low = 1023;
-int work_time_elapsed = 0, limbo_time_elapsed = 0, break_time_elapsed = 0;
-int work_time_completed_since_last_long_break = 0;
-boolean in_chair, switch_is_on, in_chair_at_last_check = false, one_third_limbo_buzzer_played = false, two_thirds_limbo_buzzer_played = false;
+int proximity, 
+    high = 0, 
+    low = 1023,
+    work_time_elapsed = 0, 
+    limbo_time_elapsed = 0,
+    break_time_elapsed = 0, 
+    work_time_completed_since_last_long_break = 0;
+    
+boolean in_chair, 
+        switch_is_on, 
+        in_chair_at_last_check = false, 
+        one_third_limbo_buzzer_played = false, 
+        two_thirds_limbo_buzzer_played = false;
 
 
 void setup()
@@ -39,7 +48,8 @@ void setup()
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(BLUE_PIN, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
-
+  restBuzzer(buzzerPin);
+  
   Serial.begin(9600);
 }
 
@@ -96,7 +106,8 @@ void loop()
           {
             delay(100);
             proximity = analogRead(pressureSensorPin);
-            in_chair = proximity > (1000 - analogRead(dialReaderPin));
+            in_chair = proximity < 500;
+            // in_chair = proximity > (1000 - analogRead(dialReaderPin));
             set_chair_indicator_led();
           }
         }

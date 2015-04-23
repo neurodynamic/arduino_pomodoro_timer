@@ -1,5 +1,11 @@
 // http://www.rpgamer.com/games/ff/ff7/ff7mid.html
 
+
+void restBuzzer(int buzzer)
+{
+  tone(buzzer, REST, 24*60*60*1000); // REST FOR MAX OF ONE DAY 
+}
+
 double play_victory(int buzzer)
 {
    int notes[] = { 
@@ -199,6 +205,8 @@ double play_monster_battle_ascension(int buzzer)
         }
         delay(tempo/10);              // brief pause between notes
       }
+      
+      restBuzzer(buzzer);
 
       return total_duration;
     }
