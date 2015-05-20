@@ -23,11 +23,11 @@ const int irl_work_length = 24*60,
           irl_long_break_every_x_breaks = 4;
 
 // ACTUAL VALUES
-int work_length, 
-    limbo_length,
-    break_length,
-    long_break_length,
-    long_break_every_x_breaks;
+int work_length = irl_work_length, 
+    limbo_length = irl_limbo_length,
+    break_length = irl_break_length,
+    long_break_length = irl_long_break_length,
+    long_break_every_x_breaks = irl_long_break_every_x_breaks;
 
 enum modes_t {WORK_MODE, LIMBO_MODE, BREAK_MODE, LONG_BREAK_MODE};
 modes_t mode = WORK_MODE;
