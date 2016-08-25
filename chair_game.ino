@@ -1,4 +1,5 @@
-const int irSwitchReaderPin = 0,
+const int echoTriggerPin = 0,
+          echoReceiverPin = 0,
           onOffSwitchReaderPin = 5,
           testSwitchReaderPin = 3,
           in_chair_indicator_pin = 3,
@@ -35,6 +36,7 @@ modes_t mode = WORK_MODE;
 
 int irSwitchReading, 
     testSwitchReading,
+    distanceInCm,
     high = 0, 
     low = 1023,
     work_time_elapsed = 0, 
@@ -58,6 +60,7 @@ void setup()
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(BLUE_PIN, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
+  pinMode(echoTriggerPin, OUTPUT);
   restBuzzer(buzzerPin);
     
   Serial.begin(9600);
@@ -142,8 +145,8 @@ void loop()
           for (int i = 0; i < 10; i++)
           {
             delay(100);
-            irSwitchReading = analogRead(irSwitchReaderPin);
-            in_chair = irSwitchReading < 500;
+            distanceInCm = get_distance_in_cm();
+            in_chair = distanceInCm < 5;
             set_chair_indicator_led();
             
             testSwitchReading = analogRead(testSwitchReaderPin);
@@ -151,6 +154,22 @@ void loop()
             test_switch_check();
           }
         }
+
+            // Reference: http://trollmaker.com/article3/arduino-and-hc-sr04-ultrasonic-sensor
+            int get_distance_in_cm()
+            {
+              int duration, distance;
+              digitalWrite(echoTriggerPin, high);
+              delayMicroseconds(1000);
+              digitalWrite(echoTriggerPin, low);
+              duration = pulseIn(echoReceiverPin, high);
+              distance = (duration/2) / 29.1;
+              Serial.print("   Duration reading: ");
+              Serial.print(duration);
+              Serial.print("   Distance reading: ");
+              Serial.println(distance);
+              return distance;
+            }
 
             void set_chair_indicator_led()
             {
@@ -166,8 +185,8 @@ void loop()
 
         void print_status()
         {
-          Serial.print("   IR switch reading: ");
-          Serial.print(irSwitchReading);
+          Serial.print("   Distance reading: ");
+          Serial.print(distanceInCm);
           Serial.print("   test switch reading: ");
           Serial.print(analogRead(testSwitchReaderPin) > 500);
           Serial.print("   work: ");

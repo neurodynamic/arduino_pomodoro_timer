@@ -3,7 +3,8 @@
 
 void restBuzzer(int buzzer)
 {
-  tone(buzzer, REST, 24*60*60*1000); // REST FOR MAX OF ONE DAY 
+  // int oneDayInSeconds = 24 * 60 * 60 * 1000;
+  tone(buzzer, REST, 1000); // REST FOR MAX OF ONE DAY 
 }
 
 double play_victory(int buzzer)
