@@ -143,7 +143,7 @@ void loop()
           {
             delay(100);
             irSwitchReading = analogRead(irSwitchReaderPin);
-            in_chair = irSwitchReading < 500;
+            in_chair = irSwitchReading > 100;
             set_chair_indicator_led();
             
             testSwitchReading = analogRead(testSwitchReaderPin);
